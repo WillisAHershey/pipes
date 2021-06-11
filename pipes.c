@@ -63,7 +63,7 @@ int main(){
 	ssize_t out_len = 0;
 	ssize_t err_len = 0;
 	while(1){
-		ssize_t in_ret = read(STDIN_FILENO,in_buf,1024); 		//	These blocks all do basically the same thing--they read from some non-blocking file descriptor
+		ssize_t in_ret = read(STDIN_FILENO,in_buf + in_len,1024); 		//	These blocks all do basically the same thing--they read from some non-blocking file descriptor
 		if(in_ret > 0){							//	and fill their own buffer while mantaining their own length-of-buffer value. When that buffer
 			in_len += in_ret;					//	is terminated with a newline character or is full, the read is considered complete, and is handled.
 			if(in_buf[in_len-1] == '\n' || in_len == 1024){
@@ -71,7 +71,7 @@ int main(){
 				in_len = 0;					//	The first block reads from stdin, and when the read is complete, it writes the buffer into a pipe
 			}							//	directed to the stdin of the child process
 		}
-		ssize_t out_ret = read(stdout_pipe[0],out_buf,1024);
+		ssize_t out_ret = read(stdout_pipe[0],out_buf + out_len,1024);
 		if(out_ret > 0){						//	The other two read from pipes connected to the stdout and stderr of the child process and when
 			out_len += out_ret;					//	complete, write them to parent's stdout/stderr with a label indicating which they came from
 			if(out_buf[out_len-1] == '\n' || out_len == 1024){
@@ -80,7 +80,7 @@ int main(){
 				out_len = 0;
 			}
 		}
-		ssize_t err_ret = read(stderr_pipe[0],err_buf,1024);
+		ssize_t err_ret = read(stderr_pipe[0],err_buf + err_len,1024);
 		if(err_ret > 0){
 			err_len += err_ret;
 			if(err_buf[err_len-1] == '\n' || err_len == 1024){
