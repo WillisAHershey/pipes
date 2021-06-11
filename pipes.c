@@ -7,7 +7,6 @@
 //This has to be here or gcc complains about kill()
 #define _POSIX_C_SOURCE 	1
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -72,21 +71,21 @@ int main(){
 				in_len = 0;					//	The first block reads from stdin, and when the read is complete, it writes the buffer into a pipe
 			}							//	directed to the stdin of the child process
 		}
-		ssize_t out_ret = read(stdout_pipe[0],out_buf,1023);
+		ssize_t out_ret = read(stdout_pipe[0],out_buf,1024);
 		if(out_ret > 0){						//	The other two read from pipes connected to the stdout and stderr of the child process and when
 			out_len += out_ret;					//	complete, write them to parent's stdout/stderr with a label indicating which they came from
-			if(out_buf[out_len-1] == '\n' || out_len == 1023){
-				out_buf[out_len] = '\0';
-				fprintf(stdout,"stdout: %s",out_buf);
+			if(out_buf[out_len-1] == '\n' || out_len == 1024){
+				write(STDOUT_FILENO,"stdout: ",8);
+				write(STDOUT_FILENO,out_buf,out_len);
 				out_len = 0;
 			}
 		}
-		ssize_t err_ret = read(stderr_pipe[0],err_buf,1023);
+		ssize_t err_ret = read(stderr_pipe[0],err_buf,1024);
 		if(err_ret > 0){
 			err_len += err_ret;
-			if(err_buf[err_len-1] == '\n' || err_len == 1023){
-				err_buf[err_len] = '\0';
-				fprintf(stderr,"stderr: %s",err_buf);
+			if(err_buf[err_len-1] == '\n' || err_len == 1024){
+				write(STDERR_FILENO,"stderr: ",8);
+				write(STDERR_FILENO,err_buf,err_len);
 				err_len = 0;
 			}
 		}
